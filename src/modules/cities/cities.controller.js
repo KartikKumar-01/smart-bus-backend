@@ -1,4 +1,5 @@
 import {
+    addCityImageService,
   addCityService,
   getCitiesService,
   removeCityService,
@@ -7,13 +8,18 @@ import {
 export const addCityController = async (req, res) => {
   try {
     const { cityName, state } = req.body;
+    let image;
+    if(req.file){
+        image = req.file
+    }
+    // console.log(cityName + " " + state)
     if (!cityName || !state) {
       return res.status(400).json({
         success: false,
         message: "City and state are required.",
       });
     }
-    const result = await addCityService(cityName, state);
+    const result = await addCityService(cityName, state, image);
     return res.status(201).json({
       success: true,
       message: `${result.name}, ${result.state} added successfully.`,
@@ -74,3 +80,33 @@ export const removeCityController = async (req, res) => {
     });
   }
 };
+
+export const addCityImageController = async (req, res) => {
+    try {
+        const {cityId} = req.params;
+        if(!cityId || isNaN(cityId)){
+            const error = new Error("City is required.");
+            error.statusCode = 400;
+            throw error;
+        }
+        const image = req.file ? req.file : null;
+        if(!image){
+            const error = new Error("Image is required.");
+            error.statusCode = 400;
+            throw error;
+        }
+        const city = await addCityImageService(Number(cityId), image);
+
+        return res.status(200).json({
+            success: true, 
+            message: "Image uploaded successfully.",
+            city
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Server error."
+        })
+    }
+}
