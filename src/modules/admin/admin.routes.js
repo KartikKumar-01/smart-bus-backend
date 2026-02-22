@@ -23,8 +23,8 @@ router.use(isAdmin);
 router.get("/users", getAllUsersController);
 router.delete("/users/:id", deleteUserController);
 
-router.post("/operators", upload.single("image"), addOperatorController);
-router.delete("/operators/:id", deleteOperatorController);
+router.post("/operators/add", upload.single("image"), addOperatorController);
+router.delete("/operators/delete/:id", deleteOperatorController);
 router.patch("/operators/:id/logo", upload.single("image"), uploadOperatorLogoController);
 
 router.patch("/users/:id/role", changeUserRoleController);
