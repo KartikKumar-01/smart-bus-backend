@@ -27,9 +27,3 @@ build/
 
 coverage/
 .idea/
-
-src/modules/auth/*
-src/utils/auth.validation.js
-src/middleware/authMiddleware.js
-src/middleware/roleMiddleware.js
-src/middleware/validate.js
