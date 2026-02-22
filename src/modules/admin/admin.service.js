@@ -115,6 +115,8 @@ export const addOperatorService = async ({
           email: normalizedEmail,
           passwordHash,
           role: "OPERATOR",
+          logoUrl: uploadedImage?.image_url ?? null,
+          imagePublicId: uploadedImage?.public_id ?? null,
         },
       });
 

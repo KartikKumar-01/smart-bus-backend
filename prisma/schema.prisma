@@ -13,6 +13,17 @@ enum UserRole {
   OPERATOR
 }
 
+enum BusType{
+  AC
+  NON_AC
+  SLEEPER
+}
+
+enum SeatType {
+  SEATER
+  SLEEPER
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED
@@ -112,7 +123,7 @@ model Bus {
   operatorId Int
   busNumber  String   @unique
   totalSeats Int
-  busType    String?
+  busType    BusType
 
   operator   Operator @relation(fields: [operatorId], references: [id])
   schedules  BusSchedule[]
@@ -141,7 +152,7 @@ model Seat {
   id         Int     @id @default(autoincrement())
   busId      Int
   seatNumber Int
-  seatType   String?
+  seatType   SeatType
 
   bus          Bus           @relation(fields: [busId], references: [id])
   bookingSeats BookingSeat[]
