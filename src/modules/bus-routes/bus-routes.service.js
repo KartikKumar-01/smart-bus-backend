@@ -13,15 +13,27 @@ export const getRoutesService = async () => {
 }
 
 export const createRouteService = async ({ cityAId, cityBId }) => {
+  const idA = Number(cityAId);
+  const idB = Number(cityBId);
 
-  if (cityAId === cityBId) {
+  if (idA === idB) {
     throwError("Both cities cannot be the same.", 400);
   }
 
-  const [a, b] =
-    cityAId < cityBId
-      ? [cityAId, cityBId]
-      : [cityBId, cityAId];
+  const [a, b] = idA < idB ? [idA, idB] : [idB, idA];
+
+  const existingRoute = await prisma.route.findUnique({
+    where: {
+      cityAId_cityBId: {
+        cityAId: a,
+        cityBId: b,
+      },
+    },
+  });
+
+  if (existingRoute) {
+    throwError("Route already exists between selected cities.", 409);
+  }
 
   const cities = await prisma.city.findMany({
     where: { id: { in: [a, b] } },
@@ -34,11 +46,11 @@ export const createRouteService = async ({ cityAId, cityBId }) => {
   const cityA = cities.find((c) => c.id === a);
   const cityB = cities.find((c) => c.id === b);
 
-  if (!cityA.latitude || !cityA.longitude) {
+  if (cityA.latitude == null || cityA.longitude == null) {
     throwError(`Coordinates missing for ${cityA.name}`, 400);
   }
 
-  if (!cityB.latitude || !cityB.longitude) {
+  if (cityB.latitude == null || cityB.longitude == null) {
     throwError(`Coordinates missing for ${cityB.name}`, 400);
   }
 
@@ -50,7 +62,7 @@ export const createRouteService = async ({ cityAId, cityBId }) => {
       cityB.longitude
     );
 
-  const route = await prisma.route.create({
+  return prisma.route.create({
     data: {
       cityAId: a,
       cityBId: b,
@@ -62,8 +74,6 @@ export const createRouteService = async ({ cityAId, cityBId }) => {
       cityB: { select: { id: true, name: true } },
     },
   });
-
-  return route;
 };
 
 export const searchRouteService = async ({ cityAId, cityBId }) => {

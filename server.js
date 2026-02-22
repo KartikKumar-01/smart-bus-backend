@@ -4,6 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import citiesRouter from "./src/modules/cities/cities.routes.js"
 import routesRouter from "./src/modules/bus-routes/bus-routes.routes.js"
+import authRouter from "./src/modules/auth/auth.routes.js"
+import adminRouter from "./src/modules/admin/admin.routes.js"
 import morgan from "morgan";
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,6 +23,8 @@ app.use(morgan("dev"))
 
 app.use("/api/cities", citiesRouter)
 app.use("/api/routes", routesRouter)
+app.use("/api/auth", authRouter)
+app.use("/api/admin", adminRouter)
 
 app.get("/", (req, res) => {
     res.send("Hello")

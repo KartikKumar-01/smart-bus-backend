@@ -10,6 +10,7 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  OPERATOR
 }
 
 enum BookingStatus {
@@ -30,16 +31,25 @@ enum ScheduleDirection {
   B_TO_A
 }
 
+model State {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  cities    City[]
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   name          String
   email         String    @unique
   passwordHash  String
+  refreshToken  String?
   role          UserRole  @default(USER)
   imageUrl      String?
   imagePublicId String?
   createdAt     DateTime  @default(now())
 
+  operatorProfile Operator?
   bookings      Booking[]
 
   @@index([email])
@@ -53,13 +63,16 @@ model Operator {
   logoUrl       String?
   imagePublicId String?
   createdAt     DateTime @default(now())
+  userId  Int @unique
 
+  user      User @relation(fields: [userId], references: [id])
   buses         Bus[]
 }
 
 model City {
   id            Int      @id @default(autoincrement())
-  name          String   @unique
+  name          String
+  stateId       Int?
   state         String?
   latitude      Float?
   longitude     Float?
@@ -69,9 +82,11 @@ model City {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
-  routesAsCityA Route[] @relation("RouteCityA")
-  routesAsCityB Route[] @relation("RouteCityB")
+  stateRelation State?   @relation(fields: [stateId], references: [id])
+  routesAsCityA Route[]  @relation("RouteCityA")
+  routesAsCityB Route[]  @relation("RouteCityB")
 
+  @@unique([name, stateId])
   @@index([popularity])
 }
 

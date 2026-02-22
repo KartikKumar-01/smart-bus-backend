@@ -3,39 +3,6 @@ import { toCamelCase } from "../../utils/format.js";
 import geocodeCity from "../../utils/geocoding.js";
 import uploadImage from "../../utils/uploadImage.js";
 
-export const addCityService = async (cityName, state = null, image) => {
-  const alreadyExist = await prisma.city.findFirst({
-    where: {
-      name: {
-        equals: toCamelCase(cityName),
-        mode: "insensitive",
-      },
-    },
-  });
-
-  if (alreadyExist) {
-    throw new Error("City already exists.");
-  }
-
-  const coordinates = await geocodeCity(cityName);
-
-  const uploaded = image ? await uploadImage(image) : null;
-
-
-  const city = await prisma.city.create({
-    data: {
-      name: toCamelCase(cityName),
-      state: toCamelCase(state),
-      imageUrl: uploaded?.image_url ?? null,
-      imagePublicId: uploaded?.public_id ?? null,
-      latitude: coordinates?.lat ?? null,
-      longitude: coordinates?.lng ?? null,
-    },
-  });
-
-  return city;
-};
-
 export const getCitiesService = async (query = null) => {
   let cities;
   const whereQuery = query?.trim()
@@ -65,36 +32,6 @@ export const getCitiesService = async (query = null) => {
   return { cities, message };
 };
 
-export const removeCityService = async (cityId) => {
-  const city = await prisma.city.findUnique({
-    where: { id: cityId },
-  });
-
-  if (!city) {
-    const error = new Error("City does not exist.");
-    error.statusCode = 404;
-    throw error;
-  }
-
-  const relatedRoute = await prisma.route.findFirst({
-    where: {
-      OR: [{ cityA: cityId }, { cityB: cityId }],
-    },
-  });
-
-  if (relatedRoute) {
-    const error = new Error("Cannot delete city. It is used in routes.");
-    error.statusCode = 409;
-    throw error;
-  }
-
-  await prisma.city.delete({
-    where: { id: cityId },
-  });
-
-  return city;
-};
-
 export const increaseCityPopularity = async (cityId, value = 1) => {
   await prisma.city.update({
     where: { id: cityId },
@@ -106,30 +43,146 @@ export const increaseCityPopularity = async (cityId, value = 1) => {
   });
 };
 
-export const addCityImageService = async (cityId, image) => {
-  const city = await prisma.city.findUnique({
-    where: { id: Number(cityId) },
+export const addStateService = async (name) => {
+  const formattedName = toCamelCase(name);
+
+  const existing = await prisma.state.findFirst({
+    where: {
+      name: { equals: formattedName, mode: "insensitive" },
+    },
   });
 
-  if (!city) {
-    const error = new Error("City not found.");
-    error.statusCode = 404;
-    throw error;
+  if (existing) throwError("State name already exists.", 409);
+
+  return prisma.state.create({
+    data: { name: formattedName },
+  });
+};
+
+export const getAllStatesService = async () => {
+  return prisma.state.findMany({
+    select: {
+      id: true,
+      name: true,
+      cities: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+      },
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+};
+
+export const addCityService = async ({ cityName, stateId, image }) => {
+  const state = await prisma.state.findUnique({
+    where: { id: Number(stateId) },
+  });
+
+  if (!state) throwError("State not found.", 404);
+
+  const formattedName = toCamelCase(cityName);
+
+  const existing = await prisma.city.findFirst({
+    where: {
+      name: { equals: formattedName, mode: "insensitive" },
+      stateId: Number(stateId),
+    },
+  });
+
+  if (existing) throwError("City already exists in this state.", 409);
+
+  let coordinates = null;
+  try {
+    coordinates = await geocodeCity(cityName);
+  } catch (err) {
+    console.error("Geocoding failed:", err.message);
   }
+
+  let uploadedImage = null;
+
+  try {
+    if (image) {
+      uploadedImage = await uploadImage(image);
+    }
+
+    const city = await prisma.city.create({
+      data: {
+        name: formattedName,
+        stateId: state.id,
+        imageUrl: uploadedImage?.image_url ?? null,
+        imagePublicId: uploadedImage?.public_id ?? null,
+        latitude: coordinates?.lat ?? null,
+        longitude: coordinates?.lng ?? null,
+      },
+    });
+
+    return city;
+  } catch (err) {
+    if (uploadedImage?.public_id) {
+      await cloudinary.uploader.destroy(uploadedImage.public_id);
+    }
+    throw err;
+  }
+};
+
+export const removeCityService = async (cityId) => {
+  const id = Number(cityId);
+
+  const city = await prisma.city.findUnique({
+    where: { id },
+  });
+
+  if (!city) throwError("City not found.", 404);
+
+  const routeFrom = await prisma.route.findFirst({
+    where: { cityAId: id },
+  });
+  const routeTo = await prisma.route.findFirst({
+    where: { cityBId: id },
+  });
+
+  if (routeFrom || routeTo)
+    throwError("Cannot delete city. Routes exist from or to this city.", 400);
+
+  await prisma.city.delete({ where: { id } });
 
   if (city.imagePublicId) {
     await cloudinary.uploader.destroy(city.imagePublicId);
   }
 
+  return city;
+};
+
+export const uploadCityImageService = async (cityId, image) => {
+  const id = Number(cityId);
+
+  const city = await prisma.city.findUnique({
+    where: { id },
+  });
+
+  if (!city) throwError("City not found.", 404);
+
   const uploaded = await uploadImage(image);
 
-  const updatedCity = await prisma.city.update({
-    where: { id: Number(cityId) },
+  await prisma.city.update({
+    where: { id },
     data: {
       imageUrl: uploaded.image_url,
       imagePublicId: uploaded.public_id,
     },
   });
 
-  return updatedCity;
+  if (city.imagePublicId) {
+    await cloudinary.uploader.destroy(city.imagePublicId);
+  }
+
+  return prisma.city.findUnique({ where: { id } });
 };

@@ -1,38 +1,4 @@
-import {
-    addCityImageService,
-  addCityService,
-  getCitiesService,
-  removeCityService,
-} from "./cities.service.js";
-
-export const addCityController = async (req, res) => {
-  try {
-    const { cityName, state } = req.body;
-    let image;
-    if(req.file){
-        image = req.file
-    }
-    // console.log(cityName + " " + state)
-    if (!cityName || !state) {
-      return res.status(400).json({
-        success: false,
-        message: "City and state are required.",
-      });
-    }
-    const result = await addCityService(cityName, state, image);
-    return res.status(201).json({
-      success: true,
-      message: `${result.name}, ${result.state} added successfully.`,
-      result,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Server error.",
-    });
-  }
-};
+import { addCityService, addStateService, getAllStatesService, getCitiesService, removeCityService, uploadCityImageService } from "./cities.service.js";
 
 export const getCitiesController = async (req, res) => {
   try {
@@ -53,60 +19,114 @@ export const getCitiesController = async (req, res) => {
   }
 };
 
-export const removeCityController = async (req, res) => {
+export const addStateController = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { name } = req.body;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "City ID is required.",
-      });
+    if (!name || typeof name !== "string" || !name.trim()) {
+      throwError("State name is required.", 400);
     }
 
-    const deletedCity = await removeCityService(Number(id));
-
-    return res.status(200).json({
+    const state = await addStateService(name.trim());
+    return res.status(201).json({
       success: true,
-      message: `${deletedCity.name} removed successfully.`,
+      message: `State ${state.name} added successfully.`,
+      state,
     });
-
   } catch (error) {
-    console.error(error);
-
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || "Server error.",
+      message: error.statusCode === 500 ? "Server error" : error.message,
     });
   }
 };
 
-export const addCityImageController = async (req, res) => {
-    try {
-        const {cityId} = req.params;
-        if(!cityId || isNaN(cityId)){
-            const error = new Error("City is required.");
-            error.statusCode = 400;
-            throw error;
-        }
-        const image = req.file ? req.file : null;
-        if(!image){
-            const error = new Error("Image is required.");
-            error.statusCode = 400;
-            throw error;
-        }
-        const city = await addCityImageService(Number(cityId), image);
-
-        return res.status(200).json({
-            success: true, 
-            message: "Image uploaded successfully.",
-            city
-        })
-    } catch (error) {
-        console.log(error);
-        return res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Server error."
-        })
-    }
+export const getAllStatesController = async (req, res) => {
+  try{
+    const states = await getAllStatesService();
+    return res.status(200).json({
+      success: true,
+      message: "States fetched successfully.",
+      states,
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.statusCode === 500 ? "Server error" : error.message,
+    });
+  }
 }
+
+// 5. City Management
+export const addCityController = async (req, res) => {
+  try {
+    const { cityName, stateId } = req.body;
+    const image = req.file ? req.file : null;
+
+    if (!cityName || !stateId) {
+      throwError("City name and state ID are required.", 400);
+    }
+
+    const city = await addCityService({ cityName: cityName.trim(), stateId, image });
+    return res.status(201).json({
+      success: true,
+      message: `City ${city.name} added successfully.`,
+      city,
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.statusCode === 500 ? "Server error" : error.message,
+    });
+  }
+};
+
+export const removeCityController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+      throwError("Valid city ID is required.", 400);
+    }
+
+    const deleted = await removeCityService(Number(id));
+    return res.status(200).json({
+      success: true,
+      message: `City ${deleted.name} removed successfully.`,
+      deleted,
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.statusCode === 500 ? "Server error" : error.message,
+    });
+  }
+};
+
+// 6. Upload City Image
+export const uploadCityImageController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const image = req.file;
+
+    if (!id || isNaN(id)) {
+      throwError("Valid city ID is required.", 400);
+    }
+
+    if (!image) {
+      throwError("Image is required.", 400);
+    }
+
+    const city = await uploadCityImageService(Number(id), image);
+    return res.status(200).json({
+      success: true,
+      message: "City image uploaded successfully.",
+      city,
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.statusCode === 500 ? "Server error" : error.message,
+    });
+  }
+};
