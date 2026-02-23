@@ -38,8 +38,8 @@ enum PaymentStatus {
 }
 
 enum ScheduleDirection {
-  A_TO_B
-  B_TO_A
+ FORWARD
+  REVERSE
 }
 
 model State {
@@ -123,11 +123,13 @@ model Bus {
   operatorId Int
   busNumber  String   @unique
   totalSeats Int
-  busType    BusType
+  busType    BusType  @default(AC)
 
   operator   Operator @relation(fields: [operatorId], references: [id])
   schedules  BusSchedule[]
   seats      Seat[]
+
+  @@index([operatorId])
 }
 
 model BusSchedule {
@@ -152,7 +154,7 @@ model Seat {
   id         Int     @id @default(autoincrement())
   busId      Int
   seatNumber Int
-  seatType   SeatType
+  seatType   SeatType @default(SEATER)
 
   bus          Bus           @relation(fields: [busId], references: [id])
   bookingSeats BookingSeat[]
