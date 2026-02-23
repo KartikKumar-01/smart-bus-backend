@@ -4,6 +4,7 @@ import {
   getAllUsersController,
   deleteUserController,
   addOperatorController,
+  addAdminController,
   deleteOperatorController,
   uploadOperatorLogoController,
   changeUserRoleController,
@@ -22,6 +23,7 @@ router.use(isAdmin);
 
 router.get("/users", getAllUsersController);
 router.delete("/users/:id", deleteUserController);
+router.post("/users/add-admin", addAdminController);
 
 router.post("/operators/add", upload.single("image"), addOperatorController);
 router.delete("/operators/delete/:id", deleteOperatorController);

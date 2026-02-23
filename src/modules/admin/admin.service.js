@@ -84,6 +84,36 @@ export const deleteUserService = async (userId, adminId) => {
   return { id: user.id, name: user.name, email: user.email };
 };
 
+export const addAdminService = async ({ name, email, password }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingUser) throwError("Email already registered.", 409);
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email: normalizedEmail,
+      passwordHash,
+      role: "ADMIN",
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+  });
+
+  return user;
+};
+
 export const addOperatorService = async ({
   name,
   email,
@@ -115,7 +145,7 @@ export const addOperatorService = async ({
           email: normalizedEmail,
           passwordHash,
           role: "OPERATOR",
-          logoUrl: uploadedImage?.image_url ?? null,
+          imageUrl: uploadedImage?.image_url ?? null,
           imagePublicId: uploadedImage?.public_id ?? null,
         },
       });
@@ -138,10 +168,17 @@ export const addOperatorService = async ({
 
     return result;
   } catch (err) {
+    console.error("Error in addOperatorService:", err);
     if (uploadedImage?.public_id) {
       await cloudinary.uploader.destroy(uploadedImage.public_id);
     }
-    throw err;
+    // Re-throw the error with more context
+    if (err.statusCode) {
+      throw err;
+    }
+    const error = new Error(err.message || "Failed to create operator");
+    error.statusCode = 500;
+    throw error;
   }
 };
 

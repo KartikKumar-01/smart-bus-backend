@@ -7,20 +7,25 @@ import routesRouter from "./src/modules/bus-routes/bus-routes.routes.js"
 import authRouter from "./src/modules/auth/auth.routes.js"
 import adminRouter from "./src/modules/admin/admin.routes.js"
 import busesRouter from "./src/modules/buses/buses.routes.js"
+import { adminLoginController } from "./src/modules/admin/admin.controller.js"
 import morgan from "morgan";
-const app = express();
-const port = process.env.PORT || 3000;
 
 dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3001;
+
 app.use(express.urlencoded({extended: true}))
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:3000",
     credentials: true
 }));
 app.use(helmet());
 app.use(morgan("dev"))
 
+// Admin login route (separate from API routes)
+app.post("/admin/login", adminLoginController)
 
 app.use("/api/cities", citiesRouter)
 app.use("/api/routes", routesRouter)

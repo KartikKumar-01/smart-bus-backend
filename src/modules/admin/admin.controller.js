@@ -4,6 +4,7 @@ import {
   getAllUsersService,
   deleteUserService,
   addOperatorService,
+  addAdminService,
   deleteOperatorService,
   uploadOperatorLogoService,
   changeUserRoleService,
@@ -100,6 +101,30 @@ export const addOperatorController = async (req, res) => {
       success: true,
       message: "Operator created successfully.",
       operator,
+    });
+  } catch (error) {
+    console.error("Error in addOperatorController:", error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.statusCode === 500 ? "Server error" : error.message,
+    });
+  }
+};
+
+// 2b. Add Admin
+export const addAdminController = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      throwError("Name, email and password are required.", 400);
+    }
+
+    const admin = await addAdminService({ name, email, password });
+    return res.status(201).json({
+      success: true,
+      message: "Admin user created successfully.",
+      admin,
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({
