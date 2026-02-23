@@ -2,7 +2,8 @@ import throwError from "../../utils/error.js";
 import {
   addBusScheduleService,
   getAllBusesSchedulesService,
-  getSpecificBusSchedulesService,
+  getSingleBusSchedulesService,
+  searchBusSchedulesService,
 } from "./bus-schedule.service.js";
 
 export const addBusScheduleController = async (req, res) => {
@@ -84,22 +85,23 @@ export const getAllBusesSchedulesController = async (req, res) => {
   }
 };
 
-export const getSpecificBusSchedulesController = async (req, res) => {
+export const searchBusSchedulesController = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Please login first.", 401);
 
-    const { limit, cursor } = req.query;
-    const { fromCityId, toCityId } = req.body;
+    const { fromCityId, toCityId, date ,limit, cursor } = req.query;
 
     if (!fromCityId || !toCityId) throwError("Both cities are required.", 400);
+    if(!date) throwError("Date is required.",  400);
     if (Number(fromCityId) === Number(toCityId))
       throwError("Both cities cannot be same.", 400);
 
-    const { schedules, nextCursor } = await getSpecificBusSchedulesService({
+    const { schedules, nextCursor } = await searchBusSchedulesService({
       userId,
       fromCityId,
       toCityId,
+      date,
       limit,
       cursor,
     });
@@ -107,6 +109,36 @@ export const getSpecificBusSchedulesController = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Schedules fetched successfully.",
+      schedules,
+      nextCursor,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
+
+export const getSingleBusSchedulesController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!userId) throwError("Please login first.", 401);
+
+    const { limit, cursor } = req.query;
+    const {busId} = req.params
+
+    const { schedules, nextCursor, busNumber } = await getSingleBusSchedulesService({
+      userId,
+      busId,
+      limit,
+      cursor,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Schedules fetched successfully for bus: ${busNumber}.`,
       schedules,
       nextCursor,
     });

@@ -114,18 +114,6 @@ export const getBusListService = async ({ userId }) => {
     where: {
       operatorId: operator.id,
     },
-    include: {
-      schedules: {
-        include: {
-          route: {
-            include: {
-              cityA: { select: { id: true, name: true } },
-              cityB: { select: { id: true, name: true } },
-            },
-          },
-        },
-      },
-    },
   });
 
   return buses;

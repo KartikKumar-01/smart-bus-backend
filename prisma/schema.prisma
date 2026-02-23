@@ -42,6 +42,13 @@ enum ScheduleDirection {
   REVERSE
 }
 
+enum ScheduleStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 model State {
   id        Int      @id @default(autoincrement())
   name      String   @unique
@@ -83,6 +90,7 @@ model Operator {
 model City {
   id            Int      @id @default(autoincrement())
   name          String
+  caption       String?
   stateId       Int?
   state         String?
   latitude      Float?
@@ -140,6 +148,7 @@ model BusSchedule {
   departureTime DateTime
   arrivalTime   DateTime
   basePrice     Int
+  status      ScheduleStatus @default(ACTIVE)
 
   bus      Bus   @relation(fields: [busId], references: [id])
   route    Route @relation(fields: [routeId], references: [id])
@@ -147,6 +156,7 @@ model BusSchedule {
 
   @@index([routeId])
   @@index([routeId, departureTime])
+  @@index([routeId, direction, departureTime])
   @@index([busId])
 }
 
