@@ -70,7 +70,14 @@ export const deleteUserService = async (userId, adminId) => {
 
   const user = await prisma.user.findUnique({
     where: { id },
-    include: { bookings: true },
+    include: { 
+      bookings: true,
+      operatorProfile: {
+        include: {
+          buses: true,
+        },
+      },
+    },
   });
 
   if (!user) throwError("User not found.", 404);
@@ -78,8 +85,21 @@ export const deleteUserService = async (userId, adminId) => {
   if (user.role === "ADMIN") throwError("Cannot delete an ADMIN user.", 400);
   if (user.bookings.length > 0)
     throwError("Cannot delete user with existing bookings.", 400);
+  
+  // Check if operator has buses
+  if (user.operatorProfile && user.operatorProfile.buses.length > 0) {
+    throwError("Cannot delete operator with assigned buses.", 400);
+  }
 
-  await prisma.user.delete({ where: { id } });
+  // Delete in transaction to maintain data integrity
+  await prisma.$transaction(async (tx) => {
+    // If user has an operator profile, delete it first
+    if (user.operatorProfile) {
+      await tx.operator.delete({ where: { id: user.operatorProfile.id } });
+    }
+    // Then delete the user
+    await tx.user.delete({ where: { id } });
+  });
 
   return { id: user.id, name: user.name, email: user.email };
 };
