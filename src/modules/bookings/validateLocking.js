@@ -1,4 +1,5 @@
-import redis from "../../config/redis";
+import redis from "../../config/redis.js";
+import throwError from "../../utils/error.js";
 
 export const validateSeatLocks = async (userId, scheduleId, seatNumbers) => {
   for (const seatNumber of seatNumbers) {

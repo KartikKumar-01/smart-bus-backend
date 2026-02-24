@@ -1,3 +1,5 @@
+import redis from "../../config/redis.js";
+
 export const releaseSeatLocks = async (scheduleId, seatNumbers) => {
     const pipeline = redis.pipeline();
   

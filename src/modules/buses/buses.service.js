@@ -6,6 +6,7 @@ export const addBusService = async ({
   busNumber,
   totalSeats,
   busType,
+  busModel
 }) => {
   const id = Number(userId);
 
@@ -58,6 +59,7 @@ export const addBusService = async ({
         busNumber,
         totalSeats,
         busType: busType,
+        busModel
       },
     });
 

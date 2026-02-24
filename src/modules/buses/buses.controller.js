@@ -10,11 +10,11 @@ export const addBusController = async (req, res) => {
     const userId = req.user.id;
     if (!userId) throwError("Login first.", 401);
 
-    const { busNumber, totalSeats, busType } = req.body;
+    const { busNumber, totalSeats, busType, busModel } = req.body;
     if (!busNumber || !totalSeats || !busType)
       throwError("All fields are required.", 400);
 
-    const bus = await addBusService({ userId, busNumber, totalSeats, busType });
+    const bus = await addBusService({ userId, busNumber, totalSeats, busType, busModel });
     return res.status(201).json({
       success: true,
       message: "Bus added successfully.",

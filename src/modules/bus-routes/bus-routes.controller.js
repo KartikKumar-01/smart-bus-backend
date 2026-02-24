@@ -20,13 +20,16 @@ export const getRoutesController = async (req, res) => {
 
 export const createRouteController = async (req, res) => {
   try {
-    const { cityAId, cityBId } = req.body;
+    const { cityAId, cityBId, distanceKm, durationMinutes } = req.body;
 
-    if (!cityAId || !cityBId) {
-      throwError("Both cities are required.", 400);
+    if (!cityAId || !cityBId || !distanceKm || !durationMinutes) {
+      throwError("Required fields are missing.", 400);
     }
 
-    const route = await createRouteService({ cityAId, cityBId });
+    const route = await createRouteService({ cityAId, cityBId, 
+      distanceKm: Number(distanceKm),
+      durationMinutes: Number(durationMinutes),
+     });
 
     return res.status(201).json({
       success: true,

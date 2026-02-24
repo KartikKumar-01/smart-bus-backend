@@ -7,7 +7,7 @@ export const lockSeats = async (userId, scheduleId, seatNumbers) => {
     const lockedSeats = []
 
     for(const seatNumber of seatNumbers){
-        const key = `{seat_lock}:${scheduleId}:${seatNumber}`
+        const key = `seat_lock:${scheduleId}:${seatNumber}`
         const result = await redis.set(key, userId, "NX", "EX", lock_TTL);
 
         if(!result) lockedSeats.push(seatNumber);
