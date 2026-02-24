@@ -153,11 +153,13 @@ model BusSchedule {
   bus      Bus   @relation(fields: [busId], references: [id])
   route    Route @relation(fields: [routeId], references: [id])
   bookings Booking[]
+  bookingSeats BookingSeat[]
 
   @@index([routeId])
   @@index([routeId, departureTime])
   @@index([routeId, direction, departureTime])
   @@index([busId])
+  @@index([status])
 }
 
 model Seat {
@@ -190,14 +192,16 @@ model Booking {
 }
 
 model BookingSeat {
-  id        Int @id @default(autoincrement())
-  bookingId Int
-  seatId    Int
+  id         Int @id @default(autoincrement())
+  bookingId  Int
+  scheduleId Int
+  seatId     Int
 
-  booking Booking @relation(fields: [bookingId], references: [id])
-  seat    Seat    @relation(fields: [seatId], references: [id])
+  booking  Booking     @relation(fields: [bookingId], references: [id])
+  schedule BusSchedule @relation(fields: [scheduleId], references: [id])
+  seat     Seat        @relation(fields: [seatId], references: [id])
 
-  @@unique([bookingId, seatId])
+  @@unique([scheduleId, seatId]) 
 }
 
 model Payment {

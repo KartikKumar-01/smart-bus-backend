@@ -8,7 +8,8 @@ import authRouter from "./src/modules/auth/auth.routes.js"
 import adminRouter from "./src/modules/admin/admin.routes.js"
 import busesRouter from "./src/modules/buses/buses.routes.js"
 import busScheduleRouter from "./src/modules/bus-schedule/bus-schedule.routes.js"
-
+import bookingsRouter from "./src/modules/bookings/bookings.routes.js"
+import "./src/config/redis.js"
 import morgan from "morgan";
 import { adminLoginController } from "./src/modules/admin/admin.controller.js";
 
@@ -35,6 +36,7 @@ app.use("/api/auth", authRouter)
 app.use("/api/admin", adminRouter)
 app.use("/api/buses", busesRouter)
 app.use("/api/bus-schedules", busScheduleRouter)
+app.use("/api/bookings", bookingsRouter)
 
 app.get("/", (req, res) => {
     res.send("Hello")
