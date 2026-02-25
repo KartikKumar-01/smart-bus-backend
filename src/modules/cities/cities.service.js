@@ -2,6 +2,8 @@ import prisma from "../../config/db.js";
 import { toCamelCase } from "../../utils/format.js";
 import geocodeCity from "../../utils/geocoding.js";
 import uploadImage from "../../utils/uploadImage.js";
+import throwError from "../../utils/error.js";
+import cloudinary from "../../config/cloudinary.js";
 
 export const getCitiesService = async (query = null) => {
   const whereQuery = query?.trim()
@@ -137,6 +139,7 @@ export const addCityService = async ({ cityName, stateId, image }) => {
       data: {
         name: formattedName,
         stateId: state.id,
+        state: state.name,
         imageUrl: uploadedImage?.image_url ?? null,
         imagePublicId: uploadedImage?.public_id ?? null,
         latitude: coordinates?.lat ?? null,
