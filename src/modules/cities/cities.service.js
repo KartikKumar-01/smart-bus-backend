@@ -4,7 +4,6 @@ import geocodeCity from "../../utils/geocoding.js";
 import uploadImage from "../../utils/uploadImage.js";
 
 export const getCitiesService = async (query = null) => {
-  let cities;
   const whereQuery = query?.trim()
     ? {
         name: {
@@ -13,23 +12,44 @@ export const getCitiesService = async (query = null) => {
         },
       }
     : {};
-  cities = await prisma.city.findMany({
+
+  const cities = await prisma.city.findMany({
     where: whereQuery,
     select: {
       id: true,
       name: true,
-      state: true,
       imageUrl: true,
       imagePublicId: true,
+      stateRelation: {
+        select: {
+          name: true,
+        },
+      },
     },
     take: 8,
-    orderBy: [{ popularity: "desc" }, { name: "asc" }],
+    orderBy: [
+      { popularity: "desc" },
+      { name: "asc" }
+    ],
   });
 
   const message =
-    cities.length == 0 ? "No cities found." : "Cities fetched successfully.";
+    cities.length === 0
+      ? "No cities found."
+      : "Cities fetched successfully.";
 
-  return { cities, message };
+  const formattedCities = cities.map((city) => ({
+    id: city.id,
+    name: city.name,
+    state: city.stateRelation?.name || null,
+    imageUrl: city.imageUrl,
+    imagePublicId: city.imagePublicId,
+  }));
+
+  return {
+    cities: formattedCities,
+    message,
+  };
 };
 
 export const increaseCityPopularity = async (cityId, value = 1) => {

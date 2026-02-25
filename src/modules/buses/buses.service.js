@@ -90,13 +90,6 @@ export const addBusService = async ({
           name: true,
         },
       },
-      seats: {
-        select: {
-          id: true,
-          seatNumber: true,
-          seatType: true,
-        },
-      },
     },
   });
 };
@@ -105,6 +98,12 @@ export const getBusListService = async ({ userId }) => {
   const operator = await prisma.operator.findUnique({
     where: {
       userId: Number(userId),
+    },
+    select: {
+      id: true,
+      name: true,
+      rating: true,
+      logoUrl: true,
     },
   });
 
@@ -116,9 +115,37 @@ export const getBusListService = async ({ userId }) => {
     where: {
       operatorId: operator.id,
     },
+    select: {
+      id: true,
+      operatorId: true,
+      busNumber: true,
+      busType: true,
+      busModel: true,
+      totalSeats: true,
+    },
+    orderBy: {
+      id: "desc",
+    }
   });
 
-  return buses;
+  const formattedBuses = buses.map((bus) => ({
+    busId: bus.id,
+    operatorId: bus.operatorId,
+    busNumber: bus.busNumber,
+    busType: bus.busType,
+    busModel: bus.busModel,
+    totalSeats: bus.totalSeats,
+    operatorLogoUrl: operator.logoUrl,
+  }));
+
+  return {
+    operator: {
+      name: operator.name,
+      rating: operator.rating,
+      logoUrl: operator.logoUrl,
+    },
+    buses: formattedBuses,
+  };
 };
 
 export const removeBusService = async ({ userId, busId }) => {
