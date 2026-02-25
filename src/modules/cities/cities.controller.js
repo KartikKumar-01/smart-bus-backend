@@ -6,6 +6,7 @@ import {
   removeCityService,
   uploadCityImageService,
 } from "./cities.service.js";
+import throwError from "../../utils/error.js";
 
 export const getCitiesController = async (req, res) => {
   try {
@@ -72,13 +73,15 @@ export const addCityController = async (req, res) => {
     const { cityName, stateId } = req.body;
     const image = req.file ? req.file : null;
 
+    console.log('Received data:', { cityName, stateId, hasImage: !!image });
+
     if (!cityName || !stateId) {
       throwError("City name and state ID are required.", 400);
     }
 
     const city = await addCityService({
       cityName: cityName.trim(),
-      stateId,
+      stateId: parseInt(stateId, 10),
       image,
     });
     return res.status(201).json({
