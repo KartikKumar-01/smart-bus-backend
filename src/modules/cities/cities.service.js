@@ -28,7 +28,6 @@ export const getCitiesService = async (query = null) => {
         },
       },
     },
-    take: 8,
     orderBy: [
       { popularity: "desc" },
       { name: "asc" }
