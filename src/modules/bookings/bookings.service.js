@@ -88,6 +88,7 @@ export const getSeatPlanService = async (scheduleId) => {
           totalSeats: true,
         },
       },
+      direction: true,
       route: {
         select: {
           cityA: { select: { name: true } },
@@ -187,7 +188,9 @@ export const getSeatPlanService = async (scheduleId) => {
     busModel: schedule.bus.busModel,
     busType: schedule.bus.busType,
     totalSeats: schedule.bus.totalSeats,
-    route: `${schedule.route.cityA.name} → ${schedule.route.cityB.name}`,
+    route: schedule.direction === 'REVERSE'
+      ? `${schedule.route.cityB.name} → ${schedule.route.cityA.name}`
+      : `${schedule.route.cityA.name} → ${schedule.route.cityB.name}`,
   };
 };
 
@@ -216,7 +219,7 @@ export const createBookingService = async (
   const departure = new Date(schedule.departureTime);
   const twoHours = 2 * 60 * 60 * 1000;
 
-  let status = "CONFIRM";
+  let status = "CONFIRMED";
   let expiresAt = null;
 
   if (paymentOption === "PAY_LATER") {
@@ -363,8 +366,14 @@ export const getAllBookingsService = async (
     status: booking.status,
     totalPrice: booking.totalPrice,
 
-    from: booking.schedule.route.cityA.name,
-    to: booking.schedule.route.cityB.name,
+    from:
+      booking.schedule.direction === "REVERSE"
+        ? booking.schedule.route.cityB.name
+        : booking.schedule.route.cityA.name,
+    to:
+      booking.schedule.direction === "REVERSE"
+        ? booking.schedule.route.cityA.name
+        : booking.schedule.route.cityB.name,
 
     busNumber: booking.schedule.bus.busNumber,
     busType: booking.schedule.bus.busType,
