@@ -79,6 +79,21 @@ export const getSeatPlanService = async (scheduleId) => {
       id: true,
       busId: true,
       status: true,
+      basePrice: true,
+      bus: {
+        select: {
+          busNumber: true,
+          busModel: true,
+          busType: true,
+          totalSeats: true,
+        },
+      },
+      route: {
+        select: {
+          cityA: { select: { name: true } },
+          cityB: { select: { name: true } },
+        },
+      },
     },
   });
 
@@ -158,7 +173,22 @@ export const getSeatPlanService = async (scheduleId) => {
     };
   });
 
-  return seatPlan;
+  // Calculate seat layout (assuming 4 seats per row for standard buses)
+  const totalSeats = schedule.bus.totalSeats;
+  const cols = 4; // Standard bus layout
+  const rows = Math.ceil(totalSeats / cols);
+
+  return {
+    seats: seatPlan,
+    rows,
+    cols,
+    basePrice: schedule.basePrice,
+    busNumber: schedule.bus.busNumber,
+    busModel: schedule.bus.busModel,
+    busType: schedule.bus.busType,
+    totalSeats: schedule.bus.totalSeats,
+    route: `${schedule.route.cityA.name} → ${schedule.route.cityB.name}`,
+  };
 };
 
 export const createBookingService = async (

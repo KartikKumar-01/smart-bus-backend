@@ -235,10 +235,16 @@ export const searchBusSchedulesService = async ({
           id: true,
           busNumber: true,
           busType: true,
+          operator: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
       route: {
         select: {
+          distanceKm: true,
           cityA: { select: { name: true } },
           cityB: { select: { name: true } },
         },
@@ -259,13 +265,15 @@ export const searchBusSchedulesService = async ({
       busId: schedule.bus.id,
       busNumber: schedule.bus.busNumber,
       busType: schedule.bus.busType,
+      operatorName: schedule.bus.operator?.name || "Unknown Operator",
       departureTime: schedule.departureTime,
       arrivalTime: schedule.arrivalTime,
       basePrice: schedule.basePrice,
-      from: isForward
+      distanceKm: schedule.route.distanceKm,
+      fromCity: isForward
         ? schedule.route.cityA.name
         : schedule.route.cityB.name,
-      to: isForward
+      toCity: isForward
         ? schedule.route.cityB.name
         : schedule.route.cityA.name,
     };
