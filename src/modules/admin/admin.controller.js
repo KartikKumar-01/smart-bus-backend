@@ -11,7 +11,7 @@ import {
 } from "./admin.service.js";
 
 // 1. Admin Login
-export const adminLoginController = async (req, res) => {
+export const adminLoginController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -39,15 +39,12 @@ export const adminLoginController = async (req, res) => {
       user,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 2. User Management
-export const getAllUsersController = async (req, res) => {
+export const getAllUsersController = async (req, res, next) => {
   try {
     const users = await getAllUsersService();
     return res.status(200).json({
@@ -56,14 +53,11 @@ export const getAllUsersController = async (req, res) => {
       users,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const deleteUserController = async (req, res) => {
+export const deleteUserController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const adminId = req.user?.id;
@@ -79,15 +73,12 @@ export const deleteUserController = async (req, res) => {
       deleted,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 3. Operator Management
-export const addOperatorController = async (req, res) => {
+export const addOperatorController = async (req, res, next) => {
   try {
     const { name, email, password, contactInfo } = req.body;
     const image = req.file ? req.file : null;
@@ -103,16 +94,12 @@ export const addOperatorController = async (req, res) => {
       operator,
     });
   } catch (error) {
-    console.error("Error in addOperatorController:", error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 2b. Add Admin
-export const addAdminController = async (req, res) => {
+export const addAdminController = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
@@ -127,14 +114,11 @@ export const addAdminController = async (req, res) => {
       admin,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const deleteOperatorController = async (req, res) => {
+export const deleteOperatorController = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -149,15 +133,12 @@ export const deleteOperatorController = async (req, res) => {
       deleted,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 3b. Upload Operator Logo (separate update endpoint)
-export const uploadOperatorLogoController = async (req, res) => {
+export const uploadOperatorLogoController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const image = req.file;
@@ -177,17 +158,14 @@ export const uploadOperatorLogoController = async (req, res) => {
       operator,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 4. State Management
 
 // 7. Change User Role
-export const changeUserRoleController = async (req, res) => {
+export const changeUserRoleController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
@@ -208,9 +186,6 @@ export const changeUserRoleController = async (req, res) => {
       user,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };

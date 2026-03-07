@@ -6,7 +6,7 @@ import {
   searchBusSchedulesService,
 } from "./bus-schedule.service.js";
 
-export const addBusScheduleController = async (req, res) => {
+export const addBusScheduleController = async (req, res, next) => {
   try {
     const {
       busId,
@@ -49,15 +49,11 @@ export const addBusScheduleController = async (req, res) => {
       schedule,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
+    next(error);
   }
 };
 
-export const getAllBusesSchedulesController = async (req, res) => {
+export const getAllBusesSchedulesController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Please login first.", 401);
@@ -77,23 +73,19 @@ export const getAllBusesSchedulesController = async (req, res) => {
       nextCursor,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
+    next(error);
   }
 };
 
-export const searchBusSchedulesController = async (req, res) => {
+export const searchBusSchedulesController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Please login first.", 401);
 
-    const { fromCityId, toCityId, date ,limit, cursor } = req.query;
+    const { fromCityId, toCityId, date, limit, cursor } = req.query;
 
     if (!fromCityId || !toCityId) throwError("Both cities are required.", 400);
-    if(!date) throwError("Date is required.",  400);
+    if (!date) throwError("Date is required.", 400);
     if (Number(fromCityId) === Number(toCityId))
       throwError("Both cities cannot be same.", 400);
 
@@ -113,21 +105,17 @@ export const searchBusSchedulesController = async (req, res) => {
       nextCursor,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
+    next(error);
   }
 };
 
-export const getSingleBusSchedulesController = async (req, res) => {
+export const getSingleBusSchedulesController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Please login first.", 401);
 
     const { limit, cursor } = req.query;
-    const {busId} = req.params
+    const { busId } = req.params
 
     const { schedules, nextCursor, busNumber } = await getSingleBusSchedulesService({
       userId,
@@ -143,10 +131,6 @@ export const getSingleBusSchedulesController = async (req, res) => {
       nextCursor,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Internal Server Error",
-    });
+    next(error);
   }
 };

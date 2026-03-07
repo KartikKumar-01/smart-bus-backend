@@ -285,6 +285,8 @@ export const getAllBookingsService = async (
   cursor,
   limit = 5,
 ) => {
+  const pageSize = Number(limit);
+
   let whereClause = { userId };
 
   let cursorFilter = {};
@@ -348,13 +350,13 @@ export const getAllBookingsService = async (
       },
     ],
 
-    take: limit + 1,
+    take: pageSize + 1,
   });
 
   let nextCursor = null;
 
-  if (bookings.length > limit) {
-    const nextItem = bookings[limit - 1];
+  if (bookings.length > pageSize) {
+    const nextItem = bookings[pageSize - 1];
 
     nextCursor = `${nextItem.schedule.departureTime.toISOString()}_${nextItem.id}`;
 

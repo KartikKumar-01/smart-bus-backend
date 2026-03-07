@@ -12,13 +12,14 @@ import bookingsRouter from "./src/modules/bookings/bookings.routes.js"
 // import "./src/config/redis.js"
 import morgan from "morgan";
 import { adminLoginController } from "./src/modules/admin/admin.controller.js";
+import { errorHandler } from "./src/middleware/errorHandler.js";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json());
 app.use(cors({
     origin: "http://localhost:3000",
@@ -41,6 +42,9 @@ app.use("/api/bookings", bookingsRouter)
 app.get("/", (req, res) => {
     res.send("Hello")
 })
+
+// Centralized error handling middleware
+app.use(errorHandler);
 
 
 

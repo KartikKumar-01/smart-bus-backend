@@ -5,7 +5,7 @@ import {
   removeBusService,
 } from "./buses.service.js";
 
-export const addBusController = async (req, res) => {
+export const addBusController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Login first.", 401);
@@ -21,15 +21,11 @@ export const addBusController = async (req, res) => {
       bus,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error." : error.message,
-    });
+    next(error);
   }
 };
 
-export const getBusListController = async (req, res) => {
+export const getBusListController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     if (!userId) throwError("Please login first.", 404);
@@ -42,11 +38,7 @@ export const getBusListController = async (req, res) => {
       buses,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error." : error.message,
-    });
+    next(error);
   }
 };
 

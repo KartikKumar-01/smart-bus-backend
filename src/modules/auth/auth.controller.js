@@ -1,7 +1,7 @@
 import throwError from "../../utils/error.js";
 import { loginUserService, registerUserService } from "./auth.service.js";
 
-export const registerUserController = async (req, res) => {
+export const registerUserController = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -16,15 +16,11 @@ export const registerUserController = async (req, res) => {
       user
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode == 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const loginUserController = async (req, res) => {
+export const loginUserController = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -51,9 +47,6 @@ export const loginUserController = async (req, res) => {
       user,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };

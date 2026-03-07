@@ -8,7 +8,7 @@ import {
 } from "./cities.service.js";
 import throwError from "../../utils/error.js";
 
-export const getCitiesController = async (req, res) => {
+export const getCitiesController = async (req, res, next) => {
   try {
     const { q } = req.query;
 
@@ -19,15 +19,11 @@ export const getCitiesController = async (req, res) => {
       cities,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Server error.",
-    });
+    next(error);
   }
 };
 
-export const addStateController = async (req, res) => {
+export const addStateController = async (req, res, next) => {
   try {
     const { name } = req.body;
 
@@ -42,15 +38,11 @@ export const addStateController = async (req, res) => {
       state,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const getAllStatesController = async (req, res) => {
+export const getAllStatesController = async (req, res, next) => {
   try {
     const states = await getAllStatesService();
     return res.status(200).json({
@@ -59,16 +51,12 @@ export const getAllStatesController = async (req, res) => {
       states,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 5. City Management
-export const addCityController = async (req, res) => {
+export const addCityController = async (req, res, next) => {
   try {
     const { cityName, stateId } = req.body;
     const image = req.file ? req.file : null;
@@ -90,15 +78,11 @@ export const addCityController = async (req, res) => {
       city,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const removeCityController = async (req, res) => {
+export const removeCityController = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -113,16 +97,12 @@ export const removeCityController = async (req, res) => {
       deleted,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
 // 6. Upload City Image
-export const uploadCityImageController = async (req, res) => {
+export const uploadCityImageController = async (req, res, next) => {
   try {
     const { id } = req.params;
     const image = req.file;
@@ -142,10 +122,6 @@ export const uploadCityImageController = async (req, res) => {
       city,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };

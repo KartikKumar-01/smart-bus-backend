@@ -1,7 +1,7 @@
 import throwError from "../../utils/error.js";
 import { createRouteService, getRoutesService, searchRouteService } from "./bus-routes.service.js";
 
-export const getRoutesController = async (req, res) => {
+export const getRoutesController = async (req, res, next) => {
   try {
     const routes = await getRoutesService();
     return res.status(200).json({
@@ -10,15 +10,11 @@ export const getRoutesController = async (req, res) => {
       routes,
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Server error.",
-      routes,
-    });
+    next(error);
   }
 };
 
-export const createRouteController = async (req, res) => {
+export const createRouteController = async (req, res, next) => {
   try {
     const { cityAId, cityBId, distanceKm, durationMinutes } = req.body;
 
@@ -26,10 +22,11 @@ export const createRouteController = async (req, res) => {
       throwError("Required fields are missing.", 400);
     }
 
-    const route = await createRouteService({ cityAId, cityBId, 
+    const route = await createRouteService({
+      cityAId, cityBId,
       distanceKm: Number(distanceKm),
       durationMinutes: Number(durationMinutes),
-     });
+    });
 
     return res.status(201).json({
       success: true,
@@ -38,16 +35,11 @@ export const createRouteController = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server Error." : error.message,
-    });
+    next(error);
   }
 };
 
-export const searchRouteController = async (req, res) => {
+export const searchRouteController = async (req, res, next) => {
   try {
     const { cityAId, cityBId } = req.query;
 
@@ -66,10 +58,6 @@ export const searchRouteController = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message:
-        error.statusCode === 500 ? "Server Error." : error.message,
-    });
+    next(error);
   }
 };

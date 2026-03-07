@@ -7,7 +7,7 @@ import {
 } from "./bookings.service.js";
 import { lockSeats } from "./seatLocking.redis.js";
 
-export const lockSeatsController = async (req, res) => {
+export const lockSeatsController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { scheduleId, seatNumbers } = req.body;
@@ -28,15 +28,11 @@ export const lockSeatsController = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Locking failed." : error.message,
-    });
+    next(error);
   }
 };
 
-export const getSeatPlanController = async (req, res) => {
+export const getSeatPlanController = async (req, res, next) => {
   try {
     const { scheduleId } = req.params;
     console.log("User role:", req.user.role);
@@ -50,15 +46,11 @@ export const getSeatPlanController = async (req, res) => {
       seatPlan,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.statusCode === 500 ? "Server error" : error.message,
-    });
+    next(error);
   }
 };
 
-export const createBookingController = async (req, res) => {
+export const createBookingController = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { scheduleId, seatNumbers, totalPrice, paymentOption } = req.body;
@@ -79,19 +71,14 @@ export const createBookingController = async (req, res) => {
       booking,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message:
-        error.statusCode === 500 ? "Booking not created." : error.message,
-    });
+    next(error);
   }
 };
 
-export const getAllBookingsController = async (req, res) => {
+export const getAllBookingsController = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const {cursor, limit} = req.query;
+    const { cursor, limit } = req.query;
 
     const bookings = await getAllBookingsService(Number(userId), cursor, limit);
 
@@ -101,11 +88,6 @@ export const getAllBookingsController = async (req, res) => {
       bookings,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message:
-        error.statusCode === 500 ? "Booking not created." : error.message,
-    });
+    next(error);
   }
 };
